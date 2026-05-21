@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photify - Private Music Revolution</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
+
+        :root {
+            --primary: #8a2be2;
+            --primary-glow: rgba(138, 43, 226, 0.5);
+            --secondary: #000000;
+            --accent: #bc8cf2;
+            --text: #ffffff;
+            --text-dim: #b3b3b3;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --card-hover: rgba(138, 43, 226, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--secondary);
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            overflow-x: hidden;
+            background: radial-gradient(circle at 50% -20%, #1a0f2e 0%, #000000 100%);
+            background-attachment: fixed;
+        }
+
+        /* ANIMATIONS */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(138, 43, 226, 0.4); }
+            70% { box-shadow: 0 0 0 20px rgba(138, 43, 226, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(138, 43, 226, 0); }
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 100px 40px;
+        }
+
+        header.main-header {
+            text-align: center;
+            margin-bottom: 120px;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        h1 {
+            font-size: 8rem;
+            margin: 0;
+            background: linear-gradient(to bottom, #ffffff 30%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -6px;
+            font-weight: 700;
+            line-height: 0.9;
+        }
+
+        .tagline {
+            font-size: 1.8rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 12px;
+            margin-top: 30px;
+            font-weight: 300;
+            opacity: 0.8;
+        }
+
+        section {
+            margin-bottom: 150px;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+
+        section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        h2 {
+            font-size: 3rem;
+            color: #fff;
+            margin-bottom: 60px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        h2::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, var(--primary), transparent);
+        }
+
+        /* GRID SYSTEM */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 40px;
+            border-radius: 35px;
+            border: 1px solid var(--glass-border);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-10px) scale(1.02);
+            background: var(--card-hover);
+            border-color: var(--primary);
+            box-shadow: 0 20px 40px rgba(138, 43, 226, 0.15);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+            transition: 0.5s;
+        }
+
+        .card:hover::before {
+            left: 100%;
+        }
+
+        .card .badge {
+            background: var(--primary);
+            color: white;
+            padding: 6px 15px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .card h3 {
+            margin: 0 0 15px 0;
+            font-size: 1.6rem;
+            color: var(--accent);
+        }
+
+        .card p {
+            color: var(--text-dim);
+            font-size: 1rem;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        /* TECH STACK SPECIAL GRID */
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .tech-item {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 25px;
+            border-radius: 25px;
+            text-align: center;
+            transition: 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .tech-item:hover {
+            background: rgba(138, 43, 226, 0.1);
+            border-color: var(--primary);
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(138, 43, 226, 0.2);
+        }
+
+        .tech-item::after {
+            content: 'Click for details';
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.65rem;
+            color: var(--accent);
+            opacity: 0;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .tech-item:hover::after {
+            opacity: 0.6;
+        }
+
+        .tech-icon {
+            width: 45px;
+            height: 45px;
+            margin: 0 auto 15px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tech-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .tech-name {
+            font-weight: 600;
+            color: #fff;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .tech-desc {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        /* COMPARISON TABLE */
+        .table-container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 35px;
+            border: 1px solid var(--glass-border);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 30px;
+            text-align: left;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        th {
+            background: rgba(138, 43, 226, 0.2);
+            color: var(--accent);
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+        }
+
+        .highlight {
+            color: #fff;
+            font-weight: 700;
+            background: linear-gradient(90deg, rgba(138, 43, 226, 0.2), transparent);
+        }
+
+        /* CTA BOX */
+        .cta-box {
+            background: linear-gradient(135deg, var(--primary) 0%, #4b0082 100%);
+            padding: 80px;
+            border-radius: 50px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 30px 60px rgba(138, 43, 226, 0.3);
+        }
+
+        .cta-box h3 {
+            font-size: 3rem;
+            margin: 0 0 20px 0;
+        }
+
+        .cta-box p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* PRINT STYLES */
+        @media print {
+            body { background: white !important; color: black !important; }
+            .card, .table-container, .cta-box { border: 1px solid #ccc !important; box-shadow: none !important; background: none !important; }
+            h1, h2, h3 { color: black !important; }
+        }
+
+        /* MOBILE OPTIMIZATION */
+        @media (max-width: 768px) {
+            .container { padding: 60px 20px; }
+            
+            h1 { font-size: 4rem; letter-spacing: -3px; }
+            .tagline { font-size: 1rem; letter-spacing: 5px; }
+            
+            h2 { font-size: 2rem; margin-bottom: 40px; }
+            
+            .grid { grid-template-columns: 1fr; }
+            
+            .tech-grid { grid-template-columns: 1fr; }
+            
+            .card { padding: 30px; }
+            
+            .cta-box { padding: 60px 30px; border-radius: 35px; }
+            .cta-box h3 { font-size: 2rem; }
+
+            .table-container { 
+                overflow-x: auto;
+                margin: 0 -20px;
+                border-radius: 0;
+                border-left: none;
+                border-right: none;
+            }
+            
+            table { min-width: 600px; }
+            th, td { padding: 20px; font-size: 0.9rem; }
+        }
+
+        /* MODAL STYLES */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .modal-overlay.visible {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: linear-gradient(145deg, rgba(30, 30, 40, 0.9), rgba(10, 10, 15, 0.95));
+            border: 1px solid var(--glass-border);
+            border-radius: 40px;
+            max-width: 700px;
+            width: 90%;
+            padding: 50px;
+            position: relative;
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 50px 100px rgba(0,0,0,0.5), 0 0 50px rgba(138, 43, 226, 0.2);
+        }
+
+        .modal-overlay.visible .modal-content {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            margin-bottom: 35px;
+        }
+
+        .modal-icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .modal-title h3 {
+            font-size: 2.2rem;
+            margin: 0;
+            color: #fff;
+        }
+
+        .modal-title span {
+            color: var(--accent);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .modal-body {
+            color: var(--text-dim);
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+
+        .modal-body ul {
+            list-style: none;
+            padding: 0;
+            margin: 25px 0 0 0;
+        }
+
+        .modal-body li {
+            margin-bottom: 20px;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .modal-body li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .modal-body b {
+            color: #fff;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.3s;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 1.2rem;
+        }
+
+        .close-btn:hover {
+            background: rgba(255,255,255,0.15);
+            transform: rotate(90deg);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="main-header">
+            <h1>PHOTIFY</h1>
+            <div class="tagline">The Private Music Revolution</div>
+        </header>
+
+        <section id="vision">
+            <h2>The Vision</h2>
+            <div class="card" style="background: linear-gradient(135deg, rgba(138, 43, 226, 0.1), transparent);">
+                <p style="font-size: 1.4rem; color: #fff; font-weight: 300; line-height: 1.8;">
+                    Photify was built to solve a critical problem: <strong>Music streaming should be about the listener, not the advertiser.</strong> 
+                    While mainstream platforms restrict your freedom and track your data, Photify gives it back. 
+                    It transforms your personal Google Drive into a <strong>premium, high-fidelity, and absolute private</strong> streaming ecosystem.
+                </p>
+            </div>
+        </section>
+
+        <section id="tech">
+            <h2>🛠️ The Full Stack</h2>
+            <div class="tech-grid">
+                <div class="tech-item" onclick="openTechModal('python')">
+                    <span class="tech-icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python"></span>
+                    <span class="tech-name">Python 3.x</span>
+                    <span class="tech-desc">Core engines for shuffling, skipping, and playlist logic.</span>
+                </div>
+                <div class="tech-item" onclick="openTechModal('nodejs')">
+                    <span class="tech-icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" alt="Node.js"></span>
+                    <span class="tech-name">Node.js</span>
+                    <span class="tech-desc">Express-based backend for metadata and API services.</span>
+                </div>
+                <div class="tech-item" onclick="openTechModal('react')">
+                    <span class="tech-icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" alt="React Native"></span>
+                    <span class="tech-name">React Native</span>
+                    <span class="tech-desc">Cross-platform mobile UI with Fabric rendering.</span>
+                </div>
+                <div class="tech-item" onclick="openTechModal('java')">
+                    <span class="tech-icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" alt="Java"></span>
+                    <span class="tech-name">Java</span>
+                    <span class="tech-desc">Native Android modules for background audio control.</span>
+                </div>
+                <div class="tech-item" onclick="openTechModal('sqlite')">
+                    <span class="tech-icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/sqlite/sqlite-original.svg" alt="SQLite"></span>
+                    <span class="tech-name">SQLite</span>
+                    <span class="tech-desc">Persistent database for user sessions and library cache.</span>
+                </div>
+                <div class="tech-item" onclick="openTechModal('json')">
+                    <span class="tech-icon"><img src="https://cdn.simpleicons.org/json/white" alt="JSON"></span>
+                    <span class="tech-name">JSON</span>
+                    <span class="tech-desc">High-speed metadata structure for song libraries.</span>
+                </div>
+                <div class="tech-item" onclick="openTechModal('drive')">
+                    <span class="tech-icon"><img src="https://cdn.simpleicons.org/googledrive/original" alt="Google Drive"></span>
+                    <span class="tech-name">Google Drive API</span>
+                    <span class="tech-desc">Distributed cloud storage for zero-server-cost hosting.</span>
+                </div>
+                <div class="tech-item" onclick="openTechModal('css')">
+                    <span class="tech-icon"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg" alt="CSS3"></span>
+                    <span class="tech-name">Modern CSS3</span>
+                    <span class="tech-desc">Glassmorphism and hardware-accelerated animations.</span>
+                </div>
+                <div class="tech-item" onclick="openTechModal('expo')">
+                    <span class="tech-icon"><img src="https://cdn.simpleicons.org/expo/white" alt="Expo"></span>
+                    <span class="tech-name">Expo / EAS</span>
+                    <span class="tech-desc">Streamlined build system for production APK deployment.</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="features">
+            <h2>💎 Premium Experience</h2>
+            <div class="grid">
+                <div class="card">
+                    <div class="badge">Exclusive</div>
+                    <h3>Priority Queue</h3>
+                    <p>Total dominance over your listening order. The system remembers your original flow and resumes instantly after your manual queue finishes.</p>
+                </div>
+                <div class="card">
+                    <div class="badge">Pro</div>
+                    <h3>Lossless Engine</h3>
+                    <p>No compression. No compromise. Stream FLAC and high-bitrate MP3s directly from your cloud without data degradation.</p>
+                </div>
+                <div class="card">
+                    <div class="badge">Privacy</div>
+                    <h3>Zero-Tracking</h3>
+                    <p>Unlike other apps, Photify doesn't sell your listening habits. Your library remains your own business, hosted in your own cloud.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="comparison">
+            <h2>⚔️ Photify vs. Industry</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Capability</th>
+                            <th>Spotify (Free)</th>
+                            <th>PHOTIFY</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Ad Experience</strong></td>
+                            <td>Constant Interruptions</td>
+                            <td class="highlight">ZERO ADS FOREVER</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Playback Control</strong></td>
+                            <td>Forced Shuffle</td>
+                            <td class="highlight">UNLIMITED FREEDOM</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Native Lyrics</strong></td>
+                            <td>Paywalled / Limited</td>
+                            <td class="highlight">FREE & INTEGRATED</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Ownership</strong></td>
+                            <td>Rented Access</td>
+                            <td class="highlight">YOUR DRIVE, YOUR FILES</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="access">
+            <div class="cta-box">
+                <h3>V.I.P. ACCESS ONLY</h3>
+                <p>Photify is a restricted, high-performance platform for authorized users. It represents the pinnacle of private audio engineering.</p>
+            </div>
+        </section>
+
+        <footer style="text-align: center; padding-bottom: 100px; color: var(--text-dim); opacity: 0.6;">
+            <p>Photify Project • Version 2.0 • Premium Edition</p>
+        </footer>
+    </div>
+
+    <!-- TECH DETAIL MODAL -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeTechModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="close-btn" onclick="closeTechModal()">×</div>
+            <div class="modal-header">
+                <div class="modal-icon" id="modalIcon"></div>
+                <div class="modal-title">
+                    <span id="modalCategory">Technology Detail</span>
+                    <h3 id="modalTitle">Tech Name</h3>
+                </div>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Content injected via JS -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Reveal sections on scroll
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('section').forEach(section => {
+            observer.observe(section);
+        });
+
+        // TECH MODAL LOGIC
+        const techDetails = {
+            python: {
+                name: 'Python 3.x',
+                category: 'Intelligence Engine',
+                icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg',
+                details: [
+                    { t: 'Smart Shuffle Algorithm', d: 'Engineered the `shuffle_engine.py` logic which uses weighted probabilities based on skip history and play frequency.' },
+                    { t: 'Behavioral Skip Tracking', d: 'Developed `skip_engine.py` to differentiate between active skips and accidental track changes, refining the recommendation loop.' },
+                    { t: 'Asynchronous Library Scanner', d: 'Utilized Python threading in `scanner.py` to index thousands of local and cloud files without blocking API responses.' },
+                    { t: 'Data Integrity Layer', d: 'Implemented `database.py` with specific cleanup routines to ensure ID3 tag consistency across the entire library.' }
+                ]
+            },
+            nodejs: {
+                name: 'Node.js / Express',
+                category: 'API Infrastructure',
+                icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg',
+                details: [
+                    { t: 'High-Performance Streaming', d: 'Custom byte-range implementation in `server.js` for seamless, low-latency audio seekability.' },
+                    { t: 'Cloud Drive Integration', d: 'Powered the `drive_scanner.js` logic to interface directly with Google Drive APIs for cloud-native playback.' },
+                    { t: 'Real-time REST Hub', d: 'Architected the centralized endpoint system that synchronizes mobile and web clients in real-time.' },
+                    { t: 'Middleware Security', d: 'Integrated request validation and error handling to protect the private library from unauthorized access.' }
+                ]
+            },
+            react: {
+                name: 'React Native',
+                category: 'Mobile Experience',
+                icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg',
+                details: [
+                    { t: 'Fabric Rendering Engine', d: 'Leveraged modern React Native architecture for buttery-smooth 60FPS UI transitions and animations.' },
+                    { t: 'Global State Management', d: 'Synchronized complex audio contexts across the entire app, ensuring the player is always in-sync.' },
+                    { t: 'Dynamic Queue Controller', d: 'Built the prioritized queue system that allows users to override current playback without losing their spot.' },
+                    { t: 'Hardware-Optimized Player', d: 'Custom components designed for maximum performance on mid-range and high-end Android devices.' }
+                ]
+            },
+            java: {
+                name: 'Java (Android Native)',
+                category: 'System Integration',
+                icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg',
+                details: [
+                    { t: 'Native Media Bridge', d: 'Custom implementation of Android MediaSession for full lock-screen and notification control integration.' },
+                    { t: 'Background Audio Focus', d: 'Managed system-level audio interrupts, ensuring playback resumes perfectly after calls or notifications.' },
+                    { t: 'Resource Management', d: 'Tuned low-level memory usage to prevent the OS from suspending the app during long listening sessions.' },
+                    { t: 'Native Modules', d: 'Bridges complex React Native logic with Android hardware-accelerated audio decoders.' }
+                ]
+            },
+            sqlite: {
+                name: 'SQLite',
+                category: 'Data Persistence',
+                icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/sqlite/sqlite-original.svg',
+                details: [
+                    { t: 'Zero-Latency Indexing', d: 'Optimized relational schemas that handle library searches across 10,000+ tracks in under 2ms.' },
+                    { t: 'Play History Intelligence', d: 'Relational tracking of every skip, play, and rating to feed the Python smart-shuffle engine.' },
+                    { t: 'ACID Compliance', d: 'Ensured library data remains uncorrupted during high-frequency metadata updates and scans.' },
+                    { t: 'Offline Availability', d: 'Cached library structures that allow the UI to feel instant even when the cloud server is connecting.' }
+                ]
+            },
+            json: {
+                name: 'JSON Architecture',
+                category: 'Communication Protocol',
+                icon: 'https://cdn.simpleicons.org/json/white',
+                details: [
+                    { t: 'Dynamic Playlist Logic', d: 'Rule-based JSON definitions for auto-generating "Heavy Rotation" and "Recently Added" lists.' },
+                    { t: 'Universal Metadata Hub', d: 'Standardized the data exchange format between the Python backend, Node.js API, and Mobile UI.' },
+                    { t: 'Library Portability', d: 'Created the `photify-library.json` export system for easy migration and backup of user listening habits.' },
+                    { t: 'Config-as-Code', d: 'Managed all application settings through human-readable JSON structures for rapid tuning.' }
+                ]
+            },
+            drive: {
+                name: 'Google Drive API',
+                category: 'Cloud Storage',
+                icon: 'https://cdn.simpleicons.org/googledrive/original',
+                details: [
+                    { t: 'Distributed Music CDN', d: 'Transformed personal cloud storage into a high-bandwidth, zero-cost streaming infrastructure.' },
+                    { t: 'OAuth2 Secure Access', d: 'Implemented enterprise-grade authentication for safe access to user-owned media files.' },
+                    { t: 'Recursive Cloud Scanner', d: 'Built deep-traversal algorithms to index multi-terabyte music collections across the cloud.' },
+                    { t: 'Infinite Scalability', d: 'Offloaded file hosting to Google servers, allowing the app to scale without server-side storage costs.' }
+                ]
+            },
+            css: {
+                name: 'Modern CSS3',
+                category: 'Aesthetic Interface',
+                icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg',
+                details: [
+                    { t: 'Glassmorphism Design', d: 'Implemented deep `backdrop-filter` effects for a premium, high-end "frosted glass" UI feel.' },
+                    { t: 'Hardware-Accelerated Motion', d: 'Utilized CSS 3D transforms for 60FPS UI animations that feel responsive and "alive".' },
+                    { t: 'Responsive Fluidity', d: 'Engineered complex media queries for a pixel-perfect experience on desktop, tablet, and mobile.' },
+                    { t: 'Variable-Based Theming', d: 'Used CSS Variables for a centralized design system that supports easy dark-mode refinements.' }
+                ]
+            },
+            expo: {
+                name: 'Expo / EAS',
+                category: 'Build Pipeline',
+                icon: 'https://cdn.simpleicons.org/expo/white',
+                details: [
+                    { t: 'Production Optimization', d: 'Automated the complex compilation of React Native and Java code for global APK deployment.' },
+                    { t: 'Unified Dev Workflow', d: 'Ensured parity between development and production environments for bug-free releases.' },
+                    { t: 'System Compatibility', d: 'Verified and bundled dependencies across hundreds of Android SDK versions and architectures.' },
+                    { t: 'OTA Update Support', d: 'Integrated capabilities for instant feature patches without requiring full app re-installations.' }
+                ]
+            }
+        };
+
+        function openTechModal(id) {
+            const data = techDetails[id];
+            if (!data) return;
+
+            document.getElementById('modalIcon').innerHTML = `<img src="${data.icon}" alt="${data.name}">`;
+            document.getElementById('modalTitle').innerText = data.name;
+            document.getElementById('modalCategory').innerText = data.category;
+            
+            let html = `<ul>`;
+            data.details.forEach(item => {
+                html += `<li><b>${item.t}</b>${item.d}</li>`;
+            });
+            html += `</ul>`;
+            
+            document.getElementById('modalBody').innerHTML = html;
+            
+            const overlay = document.getElementById('modalOverlay');
+            overlay.classList.add('visible');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeTechModal() {
+            const overlay = document.getElementById('modalOverlay');
+            overlay.classList.remove('visible');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close on ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeTechModal();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "Photify",
+    "slug": "photify",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/logo.png",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": false,
+    "splash": {
+      "image": "./assets/logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#121212"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.photify.music",
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "audio"
+        ]
+      }
+    },
+    "android": {
+      "package": "com.photify.music.app",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/logo.png",
+        "backgroundColor": "#121212"
+      },
+      "permissions": [
+        "FOREGROUND_SERVICE",
+        "WAKE_LOCK"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-font",
+      "expo-av",
+      "expo-notifications"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "37f65094-08ff-4663-afe5-25cd7a2708d4"
+      }
+    }
+  }
+}

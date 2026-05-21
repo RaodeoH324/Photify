@@ -1,0 +1,38 @@
+# --- Node.js Dependencies ---
+node_modules/
+package-lock.json
+
+# --- SQLite Databases (Local Only) ---
+*.db
+*.db-journal
+
+# --- Python Engine Files ---
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# --- Presentation & Large PDFs ---
+Photify Presentation.pdf
+Photify Presentation1.pdf
+
+# --- Mobile Subfolder Ignores ---
+mobile/node_modules/
+mobile/package-lock.json
+mobile/.expo/
+mobile/dist/
+mobile/web-build/
+mobile/expo-env.d.ts
+mobile/android/
+mobile/ios/
+
+# --- Local Environment & Secrets ---
+.env
+.env*.local
+*.pem
+*.key
+*.jks
+
+# --- System Files ---
+.DS_Store
+Thumbs.db

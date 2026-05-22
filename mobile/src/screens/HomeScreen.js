@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext, useRef } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, SafeAreaView, ScrollView, Modal, Animated, RefreshControl, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, SafeAreaView, ScrollView, Modal, Animated, RefreshControl, Dimensions, TextInput, Alert } from 'react-native';
 import { fetchPlaylists, fetchPlaylistTracks, fetchTracksFromDrive } from '../api';
 import { AudioContext } from '../AudioContext';
 import { AuthContext } from '../AuthContext';
@@ -42,20 +42,38 @@ const PlayingIndicator = ({ isPlaying }) => {
   const bar3 = React.useRef(new Animated.Value(0.4)).current;
 
   React.useEffect(() => {
+    // Stop any active animations instantly
+    bar1.stopAnimation();
+    bar2.stopAnimation();
+    bar3.stopAnimation();
+
     if (isPlaying) {
-      const animate = (val, to, duration) => {
-        Animated.sequence([
-          Animated.timing(val, { toValue: to, duration, useNativeDriver: false }),
-          Animated.timing(val, { toValue: 0.2, duration, useNativeDriver: false })
-        ]).start(() => isPlaying && animate(val, to, duration));
+      const createAnim = (val, to, duration) => {
+        return Animated.loop(
+          Animated.sequence([
+            Animated.timing(val, { toValue: to, duration, useNativeDriver: false }),
+            Animated.timing(val, { toValue: 0.2, duration, useNativeDriver: false })
+          ])
+        );
       };
-      animate(bar1, 1, 400);
-      animate(bar2, 0.8, 500);
-      animate(bar3, 0.9, 450);
+
+      const anim1 = createAnim(bar1, 1, 400);
+      const anim2 = createAnim(bar2, 0.8, 500);
+      const anim3 = createAnim(bar3, 0.9, 450);
+
+      anim1.start();
+      anim2.start();
+      anim3.start();
+
+      return () => {
+        anim1.stop();
+        anim2.stop();
+        anim3.stop();
+      };
     } else {
       bar1.setValue(0.3);
-      bar2.setValue(0.3);
-      bar3.setValue(0.3);
+      bar2.setValue(0.6);
+      bar3.setValue(0.4);
     }
   }, [isPlaying]);
 
@@ -77,6 +95,7 @@ export default function HomeScreen({ navigation }) {
   const [refreshing, setRefreshing] = useState(false);
   const [isNotifModalVisible, setNotifModalVisible] = useState(false);
   const [isSleepTimerVisible, setSleepTimerVisible] = useState(false);
+  const [customMinutes, setCustomMinutes] = useState('');
   const [isDrawerOpen, setDrawerOpen] = useState(false);
   const [isAllArtistsVisible, setAllArtistsVisible] = useState(false);
   const drawerAnim = useRef(new Animated.Value(-DRAWER_WIDTH)).current;
@@ -551,11 +570,12 @@ export default function HomeScreen({ navigation }) {
             </Text>
             
             {[
+              { label: '5 minutes', value: 5 },
+              { label: '10 minutes', value: 10 },
               { label: '15 minutes', value: 15 },
               { label: '30 minutes', value: 30 },
               { label: '45 minutes', value: 45 },
               { label: '1 hour', value: 60 },
-              { label: '2 hours', value: 120 },
             ].map(option => (
               <TouchableOpacity 
                 key={option.value} 
@@ -566,6 +586,31 @@ export default function HomeScreen({ navigation }) {
                 <Text style={styles.timerOptionText}>{option.label}</Text>
               </TouchableOpacity>
             ))}
+
+            <View style={styles.customTimerContainer}>
+              <TextInput
+                style={styles.customTimerInput}
+                value={customMinutes}
+                onChangeText={setCustomMinutes}
+                placeholder="Custom minutes (e.g., 2)"
+                placeholderTextColor="#555"
+                keyboardType="numeric"
+              />
+              <TouchableOpacity
+                style={styles.customTimerBtn}
+                onPress={() => {
+                  const mins = parseInt(customMinutes);
+                  if (mins && mins > 0) {
+                    handleSetTimer(mins);
+                    setCustomMinutes('');
+                  } else {
+                    Alert.alert("Invalid Input", "Please enter a valid number of minutes.");
+                  }
+                }}
+              >
+                <Text style={styles.customTimerBtnText}>Set</Text>
+              </TouchableOpacity>
+            </View>
 
             {sleepTimerEnd && (
               <TouchableOpacity 
@@ -1243,6 +1288,38 @@ const styles = StyleSheet.create({
   timerCloseBtnText: {
     color: '#8A2BE2',
     fontSize: 16,
+    fontWeight: 'bold',
+  },
+  customTimerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 8,
+    marginTop: 8,
+  },
+  customTimerInput: {
+    flex: 1,
+    backgroundColor: '#282828',
+    color: '#fff',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    fontSize: 15,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  customTimerBtn: {
+    backgroundColor: '#8A2BE2',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  customTimerBtnText: {
+    color: '#fff',
+    fontSize: 15,
     fontWeight: 'bold',
   },
 });

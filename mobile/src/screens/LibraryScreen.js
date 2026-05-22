@@ -10,20 +10,38 @@ const PlayingIndicator = ({ isPlaying }) => {
   const bar3 = React.useRef(new Animated.Value(0.4)).current;
 
   React.useEffect(() => {
+    // Stop any active animations instantly
+    bar1.stopAnimation();
+    bar2.stopAnimation();
+    bar3.stopAnimation();
+
     if (isPlaying) {
-      const animate = (val, to, duration) => {
-        Animated.sequence([
-          Animated.timing(val, { toValue: to, duration, useNativeDriver: false }),
-          Animated.timing(val, { toValue: 0.2, duration, useNativeDriver: false })
-        ]).start(() => isPlaying && animate(val, to, duration));
+      const createAnim = (val, to, duration) => {
+        return Animated.loop(
+          Animated.sequence([
+            Animated.timing(val, { toValue: to, duration, useNativeDriver: false }),
+            Animated.timing(val, { toValue: 0.2, duration, useNativeDriver: false })
+          ])
+        );
       };
-      animate(bar1, 1, 400);
-      animate(bar2, 0.8, 500);
-      animate(bar3, 0.9, 450);
+
+      const anim1 = createAnim(bar1, 1, 400);
+      const anim2 = createAnim(bar2, 0.8, 500);
+      const anim3 = createAnim(bar3, 0.9, 450);
+
+      anim1.start();
+      anim2.start();
+      anim3.start();
+
+      return () => {
+        anim1.stop();
+        anim2.stop();
+        anim3.stop();
+      };
     } else {
       bar1.setValue(0.3);
-      bar2.setValue(0.3);
-      bar3.setValue(0.3);
+      bar2.setValue(0.6);
+      bar3.setValue(0.4);
     }
   }, [isPlaying]);
 

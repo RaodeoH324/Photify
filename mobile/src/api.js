@@ -48,7 +48,7 @@ export const fetchTracksFromDrive = async (forceRefresh = false) => {
     const libFile = driveFiles.find(f => f.name === 'photify-library.json');
     if (libFile) {
       try {
-        const libRes = await fetch(`https://www.googleapis.com/drive/v3/files/${libFile.id}?alt=media&key=${GOOGLE_API_KEY}`);
+        const libRes = await fetch(`https://drive.google.com/uc?export=download&id=${libFile.id}`);
         const libData = await libRes.json();
         if (Array.isArray(libData)) {
           libData.forEach(item => {
@@ -84,7 +84,7 @@ export const fetchTracksFromDrive = async (forceRefresh = false) => {
       // Automatic image matching
       const matchingImg = images.find(img => img.name.startsWith(baseName));
       const coverUrl = matchingImg 
-        ? `https://www.googleapis.com/drive/v3/files/${matchingImg.id}?alt=media&key=${GOOGLE_API_KEY}`
+        ? `https://drive.google.com/uc?export=download&id=${matchingImg.id}`
         : null;
 
       // 2. Use metadata from JSON if available, otherwise fall back to manual mapping or filename
@@ -108,7 +108,7 @@ export const fetchTracksFromDrive = async (forceRefresh = false) => {
         genre: meta.genre || getGenreForTrack(baseName),
         lyrics: meta.lyrics || null,
         coverUrl: coverUrl,
-        streamUrl: `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${GOOGLE_API_KEY}`
+        streamUrl: `https://drive.google.com/uc?export=download&id=${file.id}`
       });
     });
 

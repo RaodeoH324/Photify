@@ -107,20 +107,9 @@ export default function PlayerScreen({ navigation }) {
 
   const isSyncLyrics = lyrics && lyrics.length > 1;
 
-  const lastRepeatTap = useRef(0);
-
   const handleRepeatPress = () => {
-    const now = Date.now();
-    const DOUBLE_TAP_DELAY = 300;
-    if (now - lastRepeatTap.current < DOUBLE_TAP_DELAY) {
-      // Double tap -> Mode 2 (Repeat Twice)
-      toggleRepeat(2);
-    } else {
-      // Single tap -> Cycle between Off (0) and Repeat One (1)
-      if (repeatMode === 0) toggleRepeat(1);
-      else toggleRepeat(0);
-    }
-    lastRepeatTap.current = now;
+    // Cycle: Off (0) → Repeat Once (1, green) → Infinite Loop (2, purple) → Off (0)
+    toggleRepeat();
   };
 
   useEffect(() => {
@@ -262,7 +251,7 @@ export default function PlayerScreen({ navigation }) {
                 />
                 {repeatMode === 2 && (
                   <View style={styles.repeatBadge}>
-                    <Text style={styles.repeatBadgeText}>2</Text>
+                    <Text style={styles.repeatBadgeText}>∞</Text>
                   </View>
                 )}
               </TouchableOpacity>
@@ -715,5 +704,21 @@ const styles = StyleSheet.create({
   },
   closeFullLyrics: {
     padding: 10,
+  },
+  repeatBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: '#BB86FC',
+    borderRadius: 7,
+    width: 14,
+    height: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  repeatBadgeText: {
+    color: '#000',
+    fontSize: 9,
+    fontWeight: 'bold',
   }
 });

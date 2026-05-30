@@ -21,9 +21,21 @@ export const AudioProvider = ({ children }) => {
   const [likedSongs, setLikedSongs] = useState([]);
   const [userPlaylists, setUserPlaylists] = useState([]);
   const [pinnedPlaylistIds, setPinnedPlaylistIds] = useState([]);
-  const [repeatMode, setRepeatMode] = useState(0); // 0: off, 1: repeat one, 2: repeat twice
-  const [repeatCount, setRepeatCount] = useState(0);
+  const [repeatMode, setRepeatMode] = useState(0); // 0: off, 1: repeat one (play once more), 2: infinite loop
   const [isShuffle, setIsShuffle] = useState(false);
+
+  // Refs to avoid stale closures in onPlaybackStatusUpdate / handleTrackEnd
+  const userQueueRef = useRef([]);
+  const playlistQueueRef = useRef([]);
+  const playlistIndexRef = useRef(-1);
+  const repeatModeRef = useRef(0);
+  const soundRef = useRef(null);
+
+  useEffect(() => { userQueueRef.current = userQueue; }, [userQueue]);
+  useEffect(() => { playlistQueueRef.current = playlistQueue; }, [playlistQueue]);
+  useEffect(() => { playlistIndexRef.current = playlistIndex; }, [playlistIndex]);
+  useEffect(() => { repeatModeRef.current = repeatMode; }, [repeatMode]);
+  useEffect(() => { soundRef.current = sound; }, [sound]);
   const [activePlaylistId, setActivePlaylistId] = useState(null);
   const [isFullPlayerVisible, setIsFullPlayerVisible] = useState(false);
   const [playCounts, setPlayCounts] = useState({});
@@ -236,6 +248,18 @@ export const AudioProvider = ({ children }) => {
     return newP;
   };
 
+  const renamePlaylist = async (playlistId, newName) => {
+    const updatedPlaylists = userPlaylists.map(p => {
+      if (p.id === playlistId) {
+        return { ...p, name: newName };
+      }
+      return p;
+    });
+    setUserPlaylists(updatedPlaylists);
+    await AsyncStorage.setItem(getStorageKey('userPlaylists'), JSON.stringify(updatedPlaylists));
+    addNotification(`Renamed playlist to "${newName}"`, 'playlist');
+  };
+
   const togglePinPlaylist = async (playlistId) => {
     let newPinned;
     if (pinnedPlaylistIds.includes(playlistId)) {
@@ -332,21 +356,21 @@ export const AudioProvider = ({ children }) => {
   };
 
   const handleTrackEnd = async () => {
-    if (repeatMode === 1) {
-      if (sound) {
-        await sound.setPositionAsync(0);
-        await sound.playAsync();
+    const mode = repeatModeRef.current;
+    const snd = soundRef.current;
+    if (mode === 1) {
+      // Repeat once: play the song one more time, then move to next
+      setRepeatMode(0);
+      repeatModeRef.current = 0;
+      if (snd) {
+        await snd.setPositionAsync(0);
+        await snd.playAsync();
       }
-    } else if (repeatMode === 2) {
-      if (repeatCount < 2) {
-        setRepeatCount(prev => prev + 1);
-        if (sound) {
-          await sound.setPositionAsync(0);
-          await sound.playAsync();
-        }
-      } else {
-        setRepeatCount(0);
-        nextTrack();
+    } else if (mode === 2) {
+      // Infinite loop: keep replaying forever
+      if (snd) {
+        await snd.setPositionAsync(0);
+        await snd.playAsync();
       }
     } else {
       nextTrack();
@@ -400,7 +424,7 @@ export const AudioProvider = ({ children }) => {
     if (sound) {
       sound.setOnPlaybackStatusUpdate(onPlaybackStatusUpdate);
     }
-  }, [sound, repeatMode, repeatCount, playlistQueue, playlistIndex, userQueue, isPlaying]);
+  }, [sound, repeatMode, playlistQueue, playlistIndex, userQueue, isPlaying]);
 
   const togglePlay = async () => {
     if (!sound) return;
@@ -444,7 +468,6 @@ export const AudioProvider = ({ children }) => {
   };
 
   const toggleRepeat = (mode = null) => {
-    setRepeatCount(0);
     if (mode !== null) {
       setRepeatMode(mode);
     } else {
@@ -470,11 +493,14 @@ export const AudioProvider = ({ children }) => {
 
   // NEXT TRACK: User queue takes priority over playlist queue
   const nextTrack = async () => {
-    setRepeatCount(0);
+    // Use refs to read fresh state (avoids stale closure from onPlaybackStatusUpdate)
+    const currentUserQueue = userQueueRef.current;
+    const currentPlaylistQueue = playlistQueueRef.current;
+    const currentPlaylistIndex = playlistIndexRef.current;
     
     // Check user queue first — it has priority
-    if (userQueue.length > 0) {
-      const nextFromQueue = userQueue[0];
+    if (currentUserQueue.length > 0) {
+      const nextFromQueue = currentUserQueue[0];
       // Remove the first item from user queue
       setUserQueue(prev => prev.slice(1));
       // Play it without changing playlist position (so we can resume playlist after queue empties)
@@ -483,13 +509,13 @@ export const AudioProvider = ({ children }) => {
     }
     
     // No user queue — continue with playlist
-    if (playlistQueue.length === 0) return;
+    if (currentPlaylistQueue.length === 0) return;
     
-    let nextIdx = playlistIndex + 1;
-    if (nextIdx >= playlistQueue.length) {
+    let nextIdx = currentPlaylistIndex + 1;
+    if (nextIdx >= currentPlaylistQueue.length) {
       return; // End of playlist
     }
-    await playTrack(playlistQueue[nextIdx], playlistQueue, nextIdx);
+    await playTrack(currentPlaylistQueue[nextIdx], currentPlaylistQueue, nextIdx);
   };
 
   // Play a track from user queue without changing playlist state
@@ -526,7 +552,6 @@ export const AudioProvider = ({ children }) => {
   };
 
   const prevTrack = async () => {
-    setRepeatCount(0);
     if (position > 3000) {
       await sound.setPositionAsync(0);
       return;
@@ -559,7 +584,7 @@ export const AudioProvider = ({ children }) => {
       sleepTimerEnd,
       setIsFullPlayerVisible, playTrack, togglePlay, nextTrack, prevTrack, seek, toggleLike, 
       addToQueue, removeFromUserQueue, clearUserQueue,
-      addToPlaylist, removeFromPlaylist, createPlaylist, deletePlaylist, getTrackColor,
+      addToPlaylist, removeFromPlaylist, createPlaylist, deletePlaylist, renamePlaylist, getTrackColor,
       togglePinPlaylist,
       toggleRepeat, toggleShuffle, getArtist,
       showToast, hideToast, incrementPlayCount, resetPlayCounts, clearCache,

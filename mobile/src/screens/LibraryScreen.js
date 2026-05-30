@@ -168,7 +168,9 @@ export default function LibraryScreen({ navigation }) {
     );
   };
 
-  const allLibraryItems = [{ id: 'liked', name: 'Liked Songs', tracks: likedSongs }, ...userPlaylists];
+  // Only show Liked Songs + user-created playlists (exclude system playlists from home page)
+  const userCreatedPlaylists = userPlaylists.filter(p => !p.isSystem);
+  const allLibraryItems = [{ id: 'liked', name: 'Liked Songs', tracks: likedSongs }, ...userCreatedPlaylists];
   
   const sortedItems = [...allLibraryItems].sort((a, b) => {
     const aPinned = pinnedPlaylistIds.includes(a.id);

@@ -96,6 +96,7 @@ export default function HomeScreen({ navigation }) {
   const [isNotifModalVisible, setNotifModalVisible] = useState(false);
   const [isSleepTimerVisible, setSleepTimerVisible] = useState(false);
   const [customMinutes, setCustomMinutes] = useState('');
+  const [timerUnit, setTimerUnit] = useState('min'); // 'min' or 'sec'
   const [isDrawerOpen, setDrawerOpen] = useState(false);
   const [isAllArtistsVisible, setAllArtistsVisible] = useState(false);
   const drawerAnim = useRef(new Animated.Value(-DRAWER_WIDTH)).current;
@@ -151,7 +152,24 @@ export default function HomeScreen({ navigation }) {
       setPlaylists([...contextSystemPlaylists, ...otherPlaylists]);
       
       const t = await fetchTracksFromDrive(forceRefresh);
-      setRecentTracks(t.slice(0, 10));
+      
+      // Hardcoded recently played songs in specific order
+      const RECENT_TITLES = [
+        'Piyu bole',
+        'Tere liye',
+        'Afghan jalebi',
+        'Deewani Mastani',
+        'Jhalla wallah',
+        'Chaiyya chaiyya',
+        'Jiya lage na',
+        'Chill baby',
+        'Shararat',
+        'Tera hoone laga hu',
+      ];
+      const matchedRecent = RECENT_TITLES.map(title => 
+        t.find(track => track.title.toLowerCase().includes(title.toLowerCase()))
+      ).filter(Boolean);
+      setRecentTracks(matchedRecent.length > 0 ? matchedRecent : t.slice(0, 10));
     } catch (e) {
       console.log('Error loading data', e);
     }
@@ -358,25 +376,32 @@ export default function HomeScreen({ navigation }) {
         </View>
         
         <View style={styles.gridContainer}>
-          {playlists.slice(1, 7).map((p, index) => {
-            const isActive = activePlaylistId === p.id;
-            return (
-              <TouchableOpacity key={p.id} style={styles.gridItem} onPress={() => openPlaylist(p.id, p.name)} activeOpacity={0.8}>
-                <View style={[styles.gridImgPlaceholder, { backgroundColor: '#1a1a1a' }]}>
-                  <Text style={styles.gridImgNumber}>{index + 1}</Text>
-                  <View style={styles.playlistIconBg}>
-                    <Ionicons name="musical-notes" size={14} color="#8A2BE2" />
+          {(() => {
+            // Fixed order: All Music, Recent Hits, Party Mix, Workout
+            const SYSTEM_ORDER = [1, 2, 3, 4];
+            const orderedPlaylists = SYSTEM_ORDER.map(id => 
+              userPlaylists.find(p => p.id === id)
+            ).filter(Boolean);
+            return orderedPlaylists.map((p, index) => {
+              const isActive = activePlaylistId === p.id;
+              return (
+                <TouchableOpacity key={p.id} style={styles.gridItem} onPress={() => openPlaylist(p.id, p.name)} activeOpacity={0.8}>
+                  <View style={[styles.gridImgPlaceholder, { backgroundColor: '#1a1a1a' }]}>
+                    <Text style={styles.gridImgNumber}>{index + 1}</Text>
+                    <View style={styles.playlistIconBg}>
+                      <Ionicons name="musical-notes" size={14} color="#8A2BE2" />
+                    </View>
                   </View>
-                </View>
-                <Text style={[styles.gridTitle, isActive && { color: '#1DB954' }]} numberOfLines={2}>{p.name}</Text>
-                {isActive && (
-                  <View style={{ marginRight: 12 }}>
-                    <PlayingIndicator isPlaying={isPlaying} />
-                  </View>
-                )}
-              </TouchableOpacity>
-            );
-          })}
+                  <Text style={[styles.gridTitle, isActive && { color: '#1DB954' }]} numberOfLines={2}>{p.name}</Text>
+                  {isActive && (
+                    <View style={{ marginRight: 12 }}>
+                      <PlayingIndicator isPlaying={isPlaying} />
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            });
+          })()}
         </View>
 
         <View style={styles.sectionHeader}>
@@ -592,19 +617,28 @@ export default function HomeScreen({ navigation }) {
                 style={styles.customTimerInput}
                 value={customMinutes}
                 onChangeText={setCustomMinutes}
-                placeholder="Custom minutes (e.g., 2)"
+                placeholder={timerUnit === 'min' ? "e.g., 1.5" : "e.g., 30"}
                 placeholderTextColor="#555"
-                keyboardType="numeric"
+                keyboardType="decimal-pad"
               />
+              <TouchableOpacity
+                style={[styles.unitToggleBtn, timerUnit === 'sec' && styles.unitToggleBtnActive]}
+                onPress={() => setTimerUnit(timerUnit === 'min' ? 'sec' : 'min')}
+              >
+                <Text style={[styles.unitToggleBtnText, timerUnit === 'sec' && styles.unitToggleBtnTextActive]}>
+                  {timerUnit === 'min' ? 'min' : 'sec'}
+                </Text>
+              </TouchableOpacity>
               <TouchableOpacity
                 style={styles.customTimerBtn}
                 onPress={() => {
-                  const mins = parseInt(customMinutes);
-                  if (mins && mins > 0) {
-                    handleSetTimer(mins);
+                  const val = parseFloat(customMinutes);
+                  if (val && val > 0) {
+                    const minutes = timerUnit === 'sec' ? val / 60 : val;
+                    handleSetTimer(minutes);
                     setCustomMinutes('');
                   } else {
-                    Alert.alert("Invalid Input", "Please enter a valid number of minutes.");
+                    Alert.alert("Invalid Input", `Please enter a valid number of ${timerUnit === 'sec' ? 'seconds' : 'minutes'}.`);
                   }
                 }}
               >
@@ -1321,5 +1355,28 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 15,
     fontWeight: 'bold',
+  },
+  unitToggleBtn: {
+    backgroundColor: '#282828',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: '#444',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  unitToggleBtnActive: {
+    backgroundColor: 'rgba(138,43,226,0.2)',
+    borderColor: '#8A2BE2',
+  },
+  unitToggleBtnText: {
+    color: '#b3b3b3',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  unitToggleBtnTextActive: {
+    color: '#BB86FC',
   },
 });

@@ -126,7 +126,7 @@ export const fetchPlaylists = async () => {
   const tracks = await fetchTracksFromDrive();
   return [
     { id: 'liked', name: 'Liked Songs', track_count: 0, isLiked: true },
-    { id: 1, name: 'All Songs', track_count: tracks.length },
+    { id: 1, name: 'All Music', track_count: tracks.length },
     { id: 2, name: 'Recent Hits', track_count: Math.min(tracks.length, 5) },
     { id: 3, name: 'Party Mix', track_count: 0 },
     { id: 4, name: 'Workout', track_count: 0 },
